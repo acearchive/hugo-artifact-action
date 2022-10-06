@@ -1,0 +1,25 @@
+name: "Hugo Artifact Action"
+author: "Ace Archive"
+description: >
+  A GitHub action used to build the Ace Archive site using Hugo.
+inputs:
+  path:
+    description: >
+      The path of the directory in the git repository to write the markdown
+      files to.
+    required: true
+  cloudflare_account_id:
+    description: >
+      The Cloudflare account ID for Workers KV.
+    required: true
+  cloudflare_api_token:
+    description: >
+      The secret Cloudflare API token to authenticate with Workers KV.
+    required: true
+  kv_namespace_id:
+    description: >
+      The namespace ID for Cloudflare Workers KV.
+    required: true
+runs:
+  using: "node16"
+  main: "dist/index.js"
