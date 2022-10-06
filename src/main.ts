@@ -4,23 +4,29 @@ import * as core from "@actions/core";
 import path from "path";
 import YAML from "yaml";
 
-import { getArtifactMetadata } from "./kv";
-import { getParams } from "./params";
+interface ArtifactMetadata {
+  slug: string;
+}
 
 const main = async (): Promise<void> => {
-  const params = getParams();
+  const workspacePath = process.env.GITHUB_WORKSPACE;
+  if (workspacePath === undefined) {
+    throw new Error(
+      "GITHUB_WORKSPACE is unset. You must check out a repository first."
+    );
+  }
 
-  const artifactMetadata = await getArtifactMetadata({
-    accountId: params.cloudflareAccountId,
-    secretToken: params.cloudflareApiToken,
-    namespace: params.kvNamespaceId,
-  });
+  const pathInRepo = core.getInput("path", { required: true });
 
-  const artifactsDirPath = path.join(params.repoPath, "artifacts");
+  const artifacts = JSON.parse(
+    core.getInput("artifacts", { required: true })
+  ) as ReadonlyArray<ArtifactMetadata>;
+
+  const artifactsDirPath = path.join(workspacePath, pathInRepo);
 
   await fs.mkdir(artifactsDirPath, { recursive: true });
 
-  for (const metadata of artifactMetadata) {
+  for (const metadata of artifacts) {
     const markdownPath = path.join(artifactsDirPath, `${metadata.slug}.md`);
 
     let markdownBody = "---\n";

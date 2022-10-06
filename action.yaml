@@ -8,17 +8,9 @@ inputs:
       The path of the directory in the git repository to write the markdown
       files to.
     required: true
-  cloudflare_account_id:
+  artifacts:
     description: >
-      The Cloudflare account ID for Workers KV.
-    required: true
-  cloudflare_api_token:
-    description: >
-      The secret Cloudflare API token to authenticate with Workers KV.
-    required: true
-  kv_namespace_id:
-    description: >
-      The namespace ID for Cloudflare Workers KV.
+      A JSON array containing the metadata for each artifact.
     required: true
 runs:
   using: "node16"

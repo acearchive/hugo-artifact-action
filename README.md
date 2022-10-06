@@ -28,12 +28,7 @@ a [Hugo module](https://gohugo.io/hugo-modules/) at build time.
 Obviously this is a somewhat convoluted system and is pushing the boundaries of
 what can sanely be done with a static site generator. Still, it allows us to
 serve these pages as static assets. In the future, artifact pages on the site
-may be served by edge functions instead.
-
-Currently, this tool is implemented by directly accessing [Cloudflare Workers
-KV](https://developers.cloudflare.com/workers/learning/how-kv-works/), which is
-where artifact metadata is stored. Once Ace Archive has a REST API, this action
-may be rewritten to use that instead.
+may be served by an edge function instead.
 
 See the [`action.yaml`](./action.yaml) for documentation of the input
 parameters.
