@@ -15,14 +15,8 @@ export const getArtifactMetadata = async ({
   secretToken: string;
   namespace: string;
 }): Promise<ReadonlyArray<ArtifactMetadata>> => {
-  let cursor: string | undefined = undefined;
-
   const key = `artifacts:v${version}`;
-  let requestUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespace}/values/${key}`;
-
-  if (cursor !== undefined) {
-    requestUrl += `&cursor=${cursor}`;
-  }
+  const requestUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespace}/values/${key}`;
 
   const response = await fetch(requestUrl, {
     method: "GET",
