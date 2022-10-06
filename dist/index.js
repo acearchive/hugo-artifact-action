@@ -99,8 +99,9 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         const markdownPath = path_1.default.join(artifactsDirPath, `${metadata.slug}.md`);
         let markdownBody = "---\n";
         markdownBody += yaml_1.default.stringify(metadata, {
-            blockQuote: "folded",
+            defaultKeyType: "PLAIN",
             defaultStringType: "QUOTE_DOUBLE",
+            lineWidth: 0,
             indent: 2,
         });
         markdownBody += "---\n";
