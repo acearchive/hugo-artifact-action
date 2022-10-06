@@ -25,8 +25,9 @@ const main = async (): Promise<void> => {
 
     let markdownBody = "---\n";
     markdownBody += YAML.stringify(metadata, {
-      blockQuote: "folded",
+      defaultKeyType: "PLAIN",
       defaultStringType: "QUOTE_DOUBLE",
+      lineWidth: 0,
       indent: 2,
     });
     markdownBody += "---\n";
