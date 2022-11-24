@@ -1,7 +1,5 @@
 # hugo-artifact-action
 
-🚧 This repository is under construction. 🚧
-
 This is a GitHub action used to build the [Ace Archive
 site](https://github.com/acearchive/acearchive.lgbt) using
 [Hugo](https://gohugo.io).
