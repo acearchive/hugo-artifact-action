@@ -1,6 +1,67 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 8947:
+/***/ (function(__unused_webpack_module, exports) {
+
+"use strict";
+
+//
+// API documentation:
+// https://acearchive.lgbt/docs/api/#/
+//
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ApiClient = void 0;
+class ApiClient {
+    constructor(baseUrl) {
+        this.baseUrl = baseUrl;
+        this.pageSize = 50;
+    }
+    listArtifacts(cursor) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const queryUrl = new URL(`${this.baseUrl}/artifacts`);
+            queryUrl.searchParams.append("limit", this.pageSize.toString());
+            if (cursor !== undefined) {
+                queryUrl.searchParams.append("cursor", cursor);
+            }
+            const response = yield fetch(queryUrl);
+            if (!response.ok) {
+                const problem = (yield response.json());
+                throw new Error(problem.detail);
+            }
+            return (yield response.json());
+        });
+    }
+    listAllArtifacts() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const items = [];
+            let cursor;
+            while (true) {
+                const page = yield this.listArtifacts(cursor);
+                items.push(...page.items);
+                if (page.next_cursor === undefined) {
+                    break;
+                }
+                cursor = page.next_cursor;
+            }
+            return items;
+        });
+    }
+}
+exports.ApiClient = ApiClient;
+
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -46,15 +107,18 @@ const promises_1 = __importDefault(__nccwpck_require__(3292));
 const core = __importStar(__nccwpck_require__(2186));
 const path_1 = __importDefault(__nccwpck_require__(1017));
 const yaml_1 = __importDefault(__nccwpck_require__(4083));
+const api_1 = __nccwpck_require__(8947);
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const workspacePath = process.env.GITHUB_WORKSPACE;
     if (workspacePath === undefined) {
         throw new Error("GITHUB_WORKSPACE is unset. You must check out a repository first.");
     }
     const pathInRepo = core.getInput("path", { required: true });
-    const artifacts = JSON.parse(core.getInput("artifacts", { required: true }));
+    const apiEndpoint = core.getInput("endpoint", { required: true });
     const artifactsDirPath = path_1.default.join(workspacePath, pathInRepo);
     yield promises_1.default.mkdir(artifactsDirPath, { recursive: true });
+    const client = new api_1.ApiClient(apiEndpoint);
+    const artifacts = yield client.listAllArtifacts();
     for (const metadata of artifacts) {
         const markdownPath = path_1.default.join(artifactsDirPath, `${metadata.slug}.md`);
         let markdownBody = "---\n";
