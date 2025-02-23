@@ -8,9 +8,9 @@ inputs:
       The path of the directory in the git repository to write the markdown
       files to.
     required: true
-  artifacts:
+  endpoint:
     description: >
-      A JSON array containing the metadata for each artifact.
+      The API endpoint for the Ace Archive API.
     required: true
 runs:
   using: "node16"
