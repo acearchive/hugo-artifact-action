@@ -122,6 +122,10 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const pathInRepo = core.getInput("path", { required: true });
     const apiEndpoint = core.getInput("endpoint", { required: true });
     const artifactsDirPath = path_1.default.join(workspacePath, pathInRepo);
+    // We delete all existing artifact files before we regenerate them so that
+    // artifacts which have been deleted from the database are also removed from
+    // the static site.
+    yield promises_1.default.rm(artifactsDirPath, { force: true, recursive: true });
     yield promises_1.default.mkdir(artifactsDirPath, { recursive: true });
     const client = new api_1.ApiClient(apiEndpoint);
     const artifacts = yield client.listAllArtifacts();
