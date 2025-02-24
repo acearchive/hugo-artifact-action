@@ -18,6 +18,11 @@ const main = async (): Promise<void> => {
 
   const artifactsDirPath = path.join(workspacePath, pathInRepo);
 
+  // We delete all existing artifact files before we regenerate them so that
+  // artifacts which have been deleted from the database are also removed from
+  // the static site.
+  await fs.rm(artifactsDirPath, { force: true, recursive: true });
+
   await fs.mkdir(artifactsDirPath, { recursive: true });
 
   const client = new ApiClient(apiEndpoint);
