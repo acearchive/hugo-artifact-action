@@ -20,7 +20,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ApiClient = void 0;
+exports.ApiClient = exports.slugFromUrl = void 0;
+const slugFromUrl = (url) => {
+    const urlPath = new URL(url).pathname;
+    const pathSegments = urlPath.split("/");
+    return pathSegments[pathSegments.length - 1];
+};
+exports.slugFromUrl = slugFromUrl;
 class ApiClient {
     constructor(baseUrl) {
         this.baseUrl = baseUrl;
@@ -119,8 +125,9 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     yield promises_1.default.mkdir(artifactsDirPath, { recursive: true });
     const client = new api_1.ApiClient(apiEndpoint);
     const artifacts = yield client.listAllArtifacts();
+    core.info(`Fetched ${artifacts.length} artifacts via the API`);
     for (const metadata of artifacts) {
-        const markdownPath = path_1.default.join(artifactsDirPath, `${metadata.slug}.md`);
+        const markdownPath = path_1.default.join(artifactsDirPath, `${(0, api_1.slugFromUrl)(metadata.url)}.md`);
         let markdownBody = "---\n";
         markdownBody += yaml_1.default.stringify(metadata, {
             defaultKeyType: "PLAIN",
