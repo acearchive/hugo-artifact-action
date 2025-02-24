@@ -20,13 +20,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ApiClient = exports.slugFromUrl = void 0;
-const slugFromUrl = (url) => {
-    const urlPath = new URL(url).pathname;
-    const pathSegments = urlPath.split("/");
-    return pathSegments[pathSegments.length - 1];
-};
-exports.slugFromUrl = slugFromUrl;
+exports.ApiClient = void 0;
 class ApiClient {
     constructor(baseUrl) {
         this.baseUrl = baseUrl;
@@ -64,6 +58,59 @@ class ApiClient {
     }
 }
 exports.ApiClient = ApiClient;
+
+
+/***/ }),
+
+/***/ 5039:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.apiToHugo = exports.slugFromUrl = void 0;
+const slugFromUrl = (url) => {
+    const urlPath = new URL(url).pathname;
+    const pathSegments = urlPath.split("/");
+    return pathSegments[pathSegments.length - 1];
+};
+exports.slugFromUrl = slugFromUrl;
+// Convert the API response object to the shape Hugo expects in the page
+// metadata.
+//
+// Typing this doesn't really give us much, since TypeScript doesn't actually
+// validate the shape of the API response object when deserializing. We *could*
+// use a schema validation library and do proper schema validation here, but
+// that seems excessive since we control the API.
+//
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const apiToHugo = (artifact) => ({
+    id: artifact.id,
+    slug: (0, exports.slugFromUrl)(artifact.url),
+    title: artifact.title,
+    summary: artifact.summary,
+    description: artifact.description,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    files: artifact.files.map((file) => ({
+        filename: file.filename,
+        name: file.name,
+        media_type: file.media_type,
+        url: file.url,
+        hidden: file.hidden,
+    })),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    links: artifact.links.map((link) => ({
+        name: link.name,
+        url: link.url,
+    })),
+    people: artifact.people,
+    identities: artifact.identities,
+    from_year: artifact.from_year,
+    to_year: artifact.to_year,
+    decades: artifact.decades,
+    aliases: artifact.url_aliases.map(exports.slugFromUrl),
+});
+exports.apiToHugo = apiToHugo;
 
 
 /***/ }),
@@ -114,6 +161,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const path_1 = __importDefault(__nccwpck_require__(1017));
 const yaml_1 = __importDefault(__nccwpck_require__(4083));
 const api_1 = __nccwpck_require__(8947);
+const hugo_1 = __nccwpck_require__(5039);
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const workspacePath = process.env.GITHUB_WORKSPACE;
     if (workspacePath === undefined) {
@@ -131,9 +179,9 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const artifacts = yield client.listAllArtifacts();
     core.info(`Fetched ${artifacts.length} artifacts via the API`);
     for (const metadata of artifacts) {
-        const markdownPath = path_1.default.join(artifactsDirPath, `${(0, api_1.slugFromUrl)(metadata.url)}.md`);
+        const markdownPath = path_1.default.join(artifactsDirPath, `${(0, hugo_1.slugFromUrl)(metadata.url)}.md`);
         let markdownBody = "---\n";
-        markdownBody += yaml_1.default.stringify(metadata, {
+        markdownBody += yaml_1.default.stringify((0, hugo_1.apiToHugo)(metadata), {
             defaultKeyType: "PLAIN",
             defaultStringType: "QUOTE_DOUBLE",
             lineWidth: 0,
