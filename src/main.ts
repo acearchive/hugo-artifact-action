@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import * as core from "@actions/core";
 import path from "path";
 import YAML from "yaml";
-import { ApiClient, ArtifactMetadata } from "./api";
+import { ApiClient, ArtifactMetadata, slugFromUrl } from "./api";
 
 const main = async (): Promise<void> => {
   const workspacePath = process.env.GITHUB_WORKSPACE;
@@ -24,8 +24,13 @@ const main = async (): Promise<void> => {
   const artifacts: ReadonlyArray<ArtifactMetadata> =
     await client.listAllArtifacts();
 
+  core.info(`Fetched ${artifacts.length} artifacts via the API`);
+
   for (const metadata of artifacts) {
-    const markdownPath = path.join(artifactsDirPath, `${metadata.slug}.md`);
+    const markdownPath = path.join(
+      artifactsDirPath,
+      `${slugFromUrl(metadata.url)}.md`
+    );
 
     let markdownBody = "---\n";
     markdownBody += YAML.stringify(metadata, {
