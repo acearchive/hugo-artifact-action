@@ -18,12 +18,6 @@ export interface Problem {
   detail: string;
 }
 
-export const slugFromUrl = (url: string): string => {
-  const urlPath = new URL(url).pathname;
-  const pathSegments = urlPath.split("/");
-  return pathSegments[pathSegments.length - 1];
-};
-
 export class ApiClient {
   private readonly baseUrl: string;
   private readonly pageSize: number;

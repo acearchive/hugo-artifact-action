@@ -3,7 +3,8 @@ import fs from "fs/promises";
 import * as core from "@actions/core";
 import path from "path";
 import YAML from "yaml";
-import { ApiClient, ArtifactMetadata, slugFromUrl } from "./api";
+import { ApiClient, ArtifactMetadata } from "./api";
+import { slugFromUrl, apiToHugo } from "./hugo";
 
 const main = async (): Promise<void> => {
   const workspacePath = process.env.GITHUB_WORKSPACE;
@@ -38,7 +39,7 @@ const main = async (): Promise<void> => {
     );
 
     let markdownBody = "---\n";
-    markdownBody += YAML.stringify(metadata, {
+    markdownBody += YAML.stringify(apiToHugo(metadata), {
       defaultKeyType: "PLAIN",
       defaultStringType: "QUOTE_DOUBLE",
       lineWidth: 0,
