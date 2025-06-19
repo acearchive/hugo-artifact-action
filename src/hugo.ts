@@ -37,5 +37,6 @@ export const apiToHugo = (artifact: any): any => ({
   from_year: artifact.from_year,
   to_year: artifact.to_year,
   decades: artifact.decades,
+  collections: artifact.collections,
   aliases: artifact.url_aliases.map(slugFromUrl),
 });
