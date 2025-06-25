@@ -80,7 +80,7 @@ exports.ApiClient = ApiClient;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.apiToHugo = exports.slugFromUrl = void 0;
+exports.tagsApiToHugo = exports.artifactsApiToHugo = exports.slugFromUrl = void 0;
 const slugFromUrl = (url) => {
     const urlPath = new URL(url).pathname;
     const pathSegments = urlPath.split("/");
@@ -96,7 +96,7 @@ exports.slugFromUrl = slugFromUrl;
 // that seems excessive since we control the API.
 //
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const apiToHugo = (artifact) => ({
+const artifactsApiToHugo = (artifact) => ({
     id: artifact.id,
     slug: (0, exports.slugFromUrl)(artifact.url),
     title: artifact.title,
@@ -123,7 +123,18 @@ const apiToHugo = (artifact) => ({
     collections: artifact.collections,
     aliases: artifact.url_aliases.map(exports.slugFromUrl),
 });
-exports.apiToHugo = apiToHugo;
+exports.artifactsApiToHugo = artifactsApiToHugo;
+// See comment above.
+//
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const tagsApiToHugo = (tags) => ({
+    tags: tags.map((tag) => ({
+        name: tag.name,
+        kind: tag.kind,
+        description: tag.description,
+    })),
+});
+exports.tagsApiToHugo = tagsApiToHugo;
 
 
 /***/ }),
@@ -197,11 +208,12 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     core.info(`Fetched ${artifacts.length} artifacts via the API`);
     const tags = yield client.listTags();
     core.info(`Fetched ${tags.length} tags via the API`);
-    yield promises_1.default.writeFile(metadataPath, JSON.stringify(tags, null, 2));
+    const metadataBody = (0, hugo_1.tagsApiToHugo)(tags);
+    yield promises_1.default.writeFile(metadataPath, JSON.stringify(metadataBody, null, 2));
     for (const metadata of artifacts) {
         const markdownPath = path_1.default.join(artifactsDirPath, `${(0, hugo_1.slugFromUrl)(metadata.url)}.md`);
         let markdownBody = "---\n";
-        markdownBody += yaml_1.default.stringify((0, hugo_1.apiToHugo)(metadata), {
+        markdownBody += yaml_1.default.stringify((0, hugo_1.artifactsApiToHugo)(metadata), {
             defaultKeyType: "PLAIN",
             defaultStringType: "QUOTE_DOUBLE",
             lineWidth: 0,
