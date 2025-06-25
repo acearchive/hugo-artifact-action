@@ -1,3 +1,5 @@
+import { Tag } from "./api";
+
 export const slugFromUrl = (url: string): string => {
   const urlPath = new URL(url).pathname;
   const pathSegments = urlPath.split("/");
@@ -13,7 +15,7 @@ export const slugFromUrl = (url: string): string => {
 // that seems excessive since we control the API.
 //
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const apiToHugo = (artifact: any): any => ({
+export const artifactsApiToHugo = (artifact: any): any => ({
   id: artifact.id,
   slug: slugFromUrl(artifact.url),
   title: artifact.title,
@@ -39,4 +41,15 @@ export const apiToHugo = (artifact: any): any => ({
   decades: artifact.decades,
   collections: artifact.collections,
   aliases: artifact.url_aliases.map(slugFromUrl),
+});
+
+// See comment above.
+//
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const tagsApiToHugo = (tags: ReadonlyArray<Tag>): any => ({
+  tags: tags.map((tag) => ({
+    name: tag.name,
+    kind: tag.kind,
+    description: tag.description,
+  })),
 });

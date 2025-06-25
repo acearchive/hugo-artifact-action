@@ -14,11 +14,8 @@ export interface ArtifactPageResponse {
   next_cursor: PageCursor | undefined;
 }
 
-export interface Tag {
-  name: string;
-  kind: string;
-  description?: string;
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Tag = any;
 
 export interface TagListResponse {
   items: ReadonlyArray<Tag>;

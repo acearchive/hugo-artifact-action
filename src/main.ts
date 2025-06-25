@@ -4,7 +4,7 @@ import * as core from "@actions/core";
 import path from "path";
 import YAML from "yaml";
 import { ApiClient, ArtifactMetadata, Tag } from "./api";
-import { slugFromUrl, apiToHugo } from "./hugo";
+import { slugFromUrl, artifactsApiToHugo, tagsApiToHugo } from "./hugo";
 
 const main = async (): Promise<void> => {
   const workspacePath = process.env.GITHUB_WORKSPACE;
@@ -41,7 +41,8 @@ const main = async (): Promise<void> => {
 
   core.info(`Fetched ${tags.length} tags via the API`);
 
-  await fs.writeFile(metadataPath, JSON.stringify(tags, null, 2));
+  const metadataBody = tagsApiToHugo(tags);
+  await fs.writeFile(metadataPath, JSON.stringify(metadataBody, null, 2));
 
   for (const metadata of artifacts) {
     const markdownPath = path.join(
@@ -50,7 +51,7 @@ const main = async (): Promise<void> => {
     );
 
     let markdownBody = "---\n";
-    markdownBody += YAML.stringify(apiToHugo(metadata), {
+    markdownBody += YAML.stringify(artifactsApiToHugo(metadata), {
       defaultKeyType: "PLAIN",
       defaultStringType: "QUOTE_DOUBLE",
       lineWidth: 0,
