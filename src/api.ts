@@ -9,9 +9,19 @@ export interface ArtifactMetadata {
   url: string;
 }
 
-export interface PageResponse {
+export interface ArtifactPageResponse {
   items: ReadonlyArray<ArtifactMetadata>;
   next_cursor: PageCursor | undefined;
+}
+
+export interface Tag {
+  name: string;
+  kind: string;
+  description?: string;
+}
+
+export interface TagListResponse {
+  items: ReadonlyArray<Tag>;
 }
 
 export interface Problem {
@@ -27,7 +37,9 @@ export class ApiClient {
     this.pageSize = 50;
   }
 
-  public async listArtifacts(cursor?: PageCursor): Promise<PageResponse> {
+  public async listArtifacts(
+    cursor?: PageCursor
+  ): Promise<ArtifactPageResponse> {
     const queryUrl = new URL(`${this.baseUrl}/artifacts`);
     queryUrl.searchParams.append("limit", this.pageSize.toString());
 
@@ -42,7 +54,7 @@ export class ApiClient {
       throw new Error(problem.detail);
     }
 
-    return (await response.json()) as PageResponse;
+    return (await response.json()) as ArtifactPageResponse;
   }
 
   public async listAllArtifacts(): Promise<ReadonlyArray<ArtifactMetadata>> {
@@ -62,5 +74,20 @@ export class ApiClient {
     }
 
     return items;
+  }
+
+  public async listTags(): Promise<ReadonlyArray<Tag>> {
+    const queryUrl = new URL(`${this.baseUrl}/tags`);
+
+    const response = await fetch(queryUrl);
+
+    if (!response.ok) {
+      const problem = (await response.json()) as Problem;
+      throw new Error(problem.detail);
+    }
+
+    const list = (await response.json()) as TagListResponse;
+
+    return list.items;
   }
 }

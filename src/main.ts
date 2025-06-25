@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import * as core from "@actions/core";
 import path from "path";
 import YAML from "yaml";
-import { ApiClient, ArtifactMetadata } from "./api";
+import { ApiClient, ArtifactMetadata, Tag } from "./api";
 import { slugFromUrl, apiToHugo } from "./hugo";
 
 const main = async (): Promise<void> => {
@@ -14,10 +14,14 @@ const main = async (): Promise<void> => {
     );
   }
 
-  const pathInRepo = core.getInput("path", { required: true });
+  const artifactsPathInRepo = core.getInput("artifacts_path", {
+    required: true,
+  });
+  const metadataPathInRepo = core.getInput("metadata_path", { required: true });
   const apiEndpoint = core.getInput("endpoint", { required: true });
 
-  const artifactsDirPath = path.join(workspacePath, pathInRepo);
+  const artifactsDirPath = path.join(workspacePath, artifactsPathInRepo);
+  const metadataPath = path.join(workspacePath, metadataPathInRepo);
 
   // We delete all existing artifact files before we regenerate them so that
   // artifacts which have been deleted from the database are also removed from
@@ -27,10 +31,17 @@ const main = async (): Promise<void> => {
   await fs.mkdir(artifactsDirPath, { recursive: true });
 
   const client = new ApiClient(apiEndpoint);
+
   const artifacts: ReadonlyArray<ArtifactMetadata> =
     await client.listAllArtifacts();
 
   core.info(`Fetched ${artifacts.length} artifacts via the API`);
+
+  const tags: ReadonlyArray<Tag> = await client.listTags();
+
+  core.info(`Fetched ${tags.length} tags via the API`);
+
+  await fs.writeFile(metadataPath, JSON.stringify(tags, null, 2));
 
   for (const metadata of artifacts) {
     const markdownPath = path.join(

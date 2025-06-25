@@ -3,10 +3,14 @@ author: "Ace Archive"
 description: >
   A GitHub action used to build the Ace Archive site using Hugo.
 inputs:
-  path:
+  artifacts_path:
     description: >
-      The path of the directory in the git repository to write the markdown
-      files to.
+      The path of the directory in the git repository to write the artifact page
+      markdown files to.
+    required: true
+  metadata_path:
+    description: >
+      The path of the JSON file in the archive to write the global metadata to.
     required: true
   endpoint:
     description: >
