@@ -56,6 +56,18 @@ class ApiClient {
             return items;
         });
     }
+    listTags() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const queryUrl = new URL(`${this.baseUrl}/tags`);
+            const response = yield fetch(queryUrl);
+            if (!response.ok) {
+                const problem = (yield response.json());
+                throw new Error(problem.detail);
+            }
+            const list = (yield response.json());
+            return list.items;
+        });
+    }
 }
 exports.ApiClient = ApiClient;
 
@@ -168,9 +180,13 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     if (workspacePath === undefined) {
         throw new Error("GITHUB_WORKSPACE is unset. You must check out a repository first.");
     }
-    const pathInRepo = core.getInput("path", { required: true });
+    const artifactsPathInRepo = core.getInput("artifacts_path", {
+        required: true,
+    });
+    const metadataPathInRepo = core.getInput("metadata_path", { required: true });
     const apiEndpoint = core.getInput("endpoint", { required: true });
-    const artifactsDirPath = path_1.default.join(workspacePath, pathInRepo);
+    const artifactsDirPath = path_1.default.join(workspacePath, artifactsPathInRepo);
+    const metadataPath = path_1.default.join(workspacePath, metadataPathInRepo);
     // We delete all existing artifact files before we regenerate them so that
     // artifacts which have been deleted from the database are also removed from
     // the static site.
@@ -179,6 +195,9 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const client = new api_1.ApiClient(apiEndpoint);
     const artifacts = yield client.listAllArtifacts();
     core.info(`Fetched ${artifacts.length} artifacts via the API`);
+    const tags = yield client.listTags();
+    core.info(`Fetched ${tags.length} tags via the API`);
+    yield promises_1.default.writeFile(metadataPath, JSON.stringify(tags, null, 2));
     for (const metadata of artifacts) {
         const markdownPath = path_1.default.join(artifactsDirPath, `${(0, hugo_1.slugFromUrl)(metadata.url)}.md`);
         let markdownBody = "---\n";
