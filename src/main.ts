@@ -14,21 +14,18 @@ const main = async (): Promise<void> => {
     );
   }
 
-  const artifactsPathInRepo = core.getInput("artifacts_path", {
-    required: true,
-  });
-  const metadataPathInRepo = core.getInput("metadata_path", { required: true });
   const apiEndpoint = core.getInput("endpoint", { required: true });
 
-  const artifactsDirPath = path.join(workspacePath, artifactsPathInRepo);
-  const metadataPath = path.join(workspacePath, metadataPathInRepo);
+  const artifactsMarkdownDirPath = path.join(workspacePath, "artifacts");
+  const metadataJsonFilePath = path.join(workspacePath, "metadata.json");
+  const artifactsJsonFilePath = path.join(workspacePath, "artifacts.json");
 
   // We delete all existing artifact files before we regenerate them so that
   // artifacts which have been deleted from the database are also removed from
   // the static site.
-  await fs.rm(artifactsDirPath, { force: true, recursive: true });
+  await fs.rm(artifactsMarkdownDirPath, { force: true, recursive: true });
 
-  await fs.mkdir(artifactsDirPath, { recursive: true });
+  await fs.mkdir(artifactsMarkdownDirPath, { recursive: true });
 
   const client = new ApiClient(apiEndpoint);
 
@@ -42,11 +39,16 @@ const main = async (): Promise<void> => {
   core.info(`Fetched ${tags.length} tags via the API`);
 
   const metadataBody = tagsApiToHugo(tags);
-  await fs.writeFile(metadataPath, JSON.stringify(metadataBody, null, 2));
+  await fs.writeFile(metadataJsonFilePath, JSON.stringify(metadataBody));
+
+  // Write the artifacts to a JSON file. While the markdown files with the YAML
+  // frontmatter are used for the artifact pages in the Hugo site, this JSON
+  // file is used to build the search index.
+  await fs.writeFile(artifactsJsonFilePath, JSON.stringify(artifacts));
 
   for (const metadata of artifacts) {
     const markdownPath = path.join(
-      artifactsDirPath,
+      artifactsMarkdownDirPath,
       `${slugFromUrl(metadata.url)}.md`
     );
 
