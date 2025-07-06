@@ -191,27 +191,28 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     if (workspacePath === undefined) {
         throw new Error("GITHUB_WORKSPACE is unset. You must check out a repository first.");
     }
-    const artifactsPathInRepo = core.getInput("artifacts_path", {
-        required: true,
-    });
-    const metadataPathInRepo = core.getInput("metadata_path", { required: true });
     const apiEndpoint = core.getInput("endpoint", { required: true });
-    const artifactsDirPath = path_1.default.join(workspacePath, artifactsPathInRepo);
-    const metadataPath = path_1.default.join(workspacePath, metadataPathInRepo);
+    const artifactsMarkdownDirPath = path_1.default.join(workspacePath, "artifacts");
+    const metadataJsonFilePath = path_1.default.join(workspacePath, "metadata.json");
+    const artifactsJsonFilePath = path_1.default.join(workspacePath, "artifacts.json");
     // We delete all existing artifact files before we regenerate them so that
     // artifacts which have been deleted from the database are also removed from
     // the static site.
-    yield promises_1.default.rm(artifactsDirPath, { force: true, recursive: true });
-    yield promises_1.default.mkdir(artifactsDirPath, { recursive: true });
+    yield promises_1.default.rm(artifactsMarkdownDirPath, { force: true, recursive: true });
+    yield promises_1.default.mkdir(artifactsMarkdownDirPath, { recursive: true });
     const client = new api_1.ApiClient(apiEndpoint);
     const artifacts = yield client.listAllArtifacts();
     core.info(`Fetched ${artifacts.length} artifacts via the API`);
     const tags = yield client.listTags();
     core.info(`Fetched ${tags.length} tags via the API`);
     const metadataBody = (0, hugo_1.tagsApiToHugo)(tags);
-    yield promises_1.default.writeFile(metadataPath, JSON.stringify(metadataBody, null, 2));
+    yield promises_1.default.writeFile(metadataJsonFilePath, JSON.stringify(metadataBody));
+    // Write the artifacts to a JSON file. While the markdown files with the YAML
+    // frontmatter are used for the artifact pages in the Hugo site, this JSON
+    // file is used to build the search index.
+    yield promises_1.default.writeFile(artifactsJsonFilePath, JSON.stringify(artifacts));
     for (const metadata of artifacts) {
-        const markdownPath = path_1.default.join(artifactsDirPath, `${(0, hugo_1.slugFromUrl)(metadata.url)}.md`);
+        const markdownPath = path_1.default.join(artifactsMarkdownDirPath, `${(0, hugo_1.slugFromUrl)(metadata.url)}.md`);
         let markdownBody = "---\n";
         markdownBody += yaml_1.default.stringify((0, hugo_1.artifactsApiToHugo)(metadata), {
             defaultKeyType: "PLAIN",
